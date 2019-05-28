@@ -55,4 +55,4 @@ class MalformedFaceResponse(Exception):
 if __name__ == "__main__":
     from azure_api_utils import my_keys
     fd = FaceDetector(image_folder="images", azure_key=my_keys[0])
-    print fd.create_faces_data(["a.jpg"])
+    print fd.create_faces_data(["l1.jpg"])

@@ -36,7 +36,7 @@ class BestImageOfMostCommonFaceFinder:
         if len(grouped_faces_response[self.grouped_faces_groups_key]) == 0:
             return None
         return sorted([[len(group), group] for group in grouped_faces_response[self.grouped_faces_groups_key]],
-                      key=lambda x: x[0])[0][1]
+                      key=lambda x: x[0])[-1][1]
 
     def _get_best_image_id(self, face_detection_data, relevant_image_ids):
         image_ratio_pairs = list()
@@ -49,7 +49,7 @@ class BestImageOfMostCommonFaceFinder:
             image_size = image_height * image_width
             if image_size == 0:
                 raise InvalidImageError
-            image_ratio_pairs.append([image_id, face_size / image_size])
+            image_ratio_pairs.append([image_id, float(face_size) / image_size])
         return sorted(image_ratio_pairs, key=lambda x: x[1])[-1][0]
 
 
@@ -64,4 +64,6 @@ class InvalidImageError(Exception):
 if __name__ == "__main__":
     from azure_api_utils import my_keys
     bf = BestImageOfMostCommonFaceFinder(image_folder="images", azure_key=my_keys[0])
-    print bf.get_best_image_of_most_common_face(image_name_list=["a.jpg", "b.jpg", "c.jpg", "d.jpg"])
+    print bf.get_best_image_of_most_common_face(image_name_list=["l1.jpg", "l2.jpg", "l3.jpg", "l4.jpg",
+                                                                 "l5.jpg", "l6.jpg", "l7.jpg"])
+
