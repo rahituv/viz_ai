@@ -40,6 +40,12 @@ r = requests.post("http://localhost:8080/best_most_common_face", json={
 print r.status_code
 print r.text
 
+r = requests.post("http://localhost:8080/best_most_common_face", json={
+        "image_name_list": ["l1.jpg"]
+    })
+
+print r.status_code
+print r.text
 
 thread1 = threading.Thread(target=run_for_success)
 thread2 = threading.Thread(target=run_for_success)

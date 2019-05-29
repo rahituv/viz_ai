@@ -10,6 +10,7 @@ from PIL import Image
 class BestImageOfMostCommonFaceFinder:
 
     grouped_faces_groups_key = "groups"
+    messy_group_faces_key = "messyGroup"
     meta_data_face_rectangle_key = "faceRectangle"
     face_rectangle_width_key = "width"
     face_rectangle_height_key = "height"
@@ -40,7 +41,9 @@ class BestImageOfMostCommonFaceFinder:
 
     def _get_ids_of_most_common_face(self, grouped_faces_response):
         if len(grouped_faces_response[self.grouped_faces_groups_key]) == 0:
-            return None
+            if len(grouped_faces_response[self.messy_group_faces_key]) == 0:
+                return None
+            return [grouped_faces_response[self.messy_group_faces_key][0]]
         return sorted([[len(group), group] for group in grouped_faces_response[self.grouped_faces_groups_key]],
                       key=lambda x: x[0])[-1][1]
 
