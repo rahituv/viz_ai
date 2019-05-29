@@ -1,5 +1,7 @@
 from azure_api_utils import face_id_key
 
+from utils import NoSuchImageError
+
 import requests
 import os
 
@@ -42,10 +44,6 @@ class FaceDetector:
         if response.status_code == 200:
             return response.json()
         response.raise_for_status()
-
-
-class NoSuchImageError(Exception):
-    pass
 
 
 class MalformedFaceResponse(Exception):

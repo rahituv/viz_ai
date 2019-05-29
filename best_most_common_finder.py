@@ -1,6 +1,8 @@
 from face_detector import FaceDetector
 from face_grouper import FaceGrouper
 
+from utils import NoSuchImageError
+
 import os
 from PIL import Image
 
@@ -12,25 +14,29 @@ class BestImageOfMostCommonFaceFinder:
     face_rectangle_width_key = "width"
     face_rectangle_height_key = "height"
 
+    response_meta_data_key = "meta_data"
+    response_file_name_key = "file_name"
+
     def __init__(self, image_folder, azure_key):
         self._image_folder = image_folder
         self._face_detector = FaceDetector(image_folder=image_folder, azure_key=azure_key)
         self._face_grouper = FaceGrouper(azure_key=azure_key)
 
     def get_best_image_of_most_common_face(self, image_name_list):
-        if self._file_names_are_invalid(image_name_list=image_name_list):
-            raise AnImageIsMissingError
+        self._confirm_files_exist(image_name_list=image_name_list)
         face_detection_data = self._face_detector.create_faces_data(image_name_list=image_name_list)
         grouped_faces = self._face_grouper.group_faces(face_detection_data.keys())
         most_common_face_ids = self._get_ids_of_most_common_face(grouped_faces_response=grouped_faces)
         if most_common_face_ids is None:
-            return None
+            dict()
         best_image_id = self._get_best_image_id(face_detection_data=face_detection_data, relevant_image_ids=most_common_face_ids)
-        return face_detection_data[best_image_id][FaceDetector.face_meta_data_key]
+        return {self.response_meta_data_key: face_detection_data[best_image_id][FaceDetector.face_meta_data_key],
+                self.response_file_name_key: face_detection_data[best_image_id][FaceDetector.file_name_key]}
 
-    def _file_names_are_invalid(self, image_name_list):
-        image_paths = [os.path.join(self._image_folder, image_name) for image_name in image_name_list]
-        return False in map(lambda x: os.path.exists(x), image_paths)
+    def _confirm_files_exist(self, image_name_list):
+        for image_name in image_name_list:
+            if not os.path.exists(os.path.join(self._image_folder, image_name)):
+                raise NoSuchImageError(image_name)
 
     def _get_ids_of_most_common_face(self, grouped_faces_response):
         if len(grouped_faces_response[self.grouped_faces_groups_key]) == 0:
@@ -48,17 +54,15 @@ class BestImageOfMostCommonFaceFinder:
             image_width, image_height = im.size
             image_size = image_height * image_width
             if image_size == 0:
-                raise InvalidImageError
+                raise InvalidImageError(face_detection_data[image_id][FaceDetector.file_name_key])
             image_ratio_pairs.append([image_id, float(face_size) / image_size])
         return sorted(image_ratio_pairs, key=lambda x: x[1])[-1][0]
 
 
-class AnImageIsMissingError(Exception):
-    pass
-
-
 class InvalidImageError(Exception):
-    pass
+
+    def __init__(self, file_name):
+        self.file_name = file_name
 
 
 if __name__ == "__main__":

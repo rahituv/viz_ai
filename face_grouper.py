@@ -12,7 +12,9 @@ class FaceGrouper:
 
     def group_faces(self, face_ids):
         if len(face_ids) >= self._AZURE_GROUPS_API_FACE_NUMBER_LIMIT:
-            raise ToManyImagesError()
+            raise ToManyFacesError()
+        if len(face_ids) == 0:
+            raise NoFacesError()
         headers = {'Content-Type': 'application/json',
                    'Ocp-Apim-Subscription-Key': self._azure_key}
         data = {
@@ -25,9 +27,9 @@ class FaceGrouper:
         response.raise_for_status()
 
 
-class NoSuchImageError(Exception):
+class ToManyFacesError(Exception):
     pass
 
 
-class ToManyImagesError(Exception):
+class NoFacesError(Exception):
     pass
